@@ -1,14 +1,14 @@
 <?php header('Content-Type: text/html; charset=UTF-8');
 	session_start();
 	include_once '../key.php';
-	
+	include_once '../database.php';
+
+
 	if (isset($_SESSION['user'])) {
 		switch (SGBD) {
 			case 'mysql':
-				$link = mysql_connect(HOST.':'.PORT, DB_USER, DB_PASS);
-				mysql_select_db(DB_NAME);
-				mysql_query("SET NAMES utf8mb4");
-				
+				$link = Database::getIntance()->connect();
+
 				$sql = "SELECT id_commune, lib_commune FROM commune ORDER BY lib_commune ASC";
 				$result = mysql_query($sql);
 				$i = 0;
@@ -18,7 +18,7 @@
 					$i++;
 				}
 				echo '({"commune":'.json_encode($arr).'})';
-	
+
 				mysql_free_result($result);
 				mysql_close($link);
 				break;
@@ -27,5 +27,5 @@
 				break;
 		}
 	}
-	
+
 ?>

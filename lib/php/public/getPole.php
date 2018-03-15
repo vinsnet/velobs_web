@@ -1,11 +1,10 @@
 <?php
 	include_once '../key.php';
-	
+	include_once '../database.php';
+
 	switch (SGBD) {
 		case 'mysql':
-			$link = mysql_connect(HOST.':'.PORT, DB_USER, DB_PASS);
-			mysql_select_db(DB_NAME);	
-			mysql_query("SET NAMES utf8mb4");
+			$link = Database::getIntance()->connect();
 			$sql = "SELECT id_pole, lib_pole, AsText(geom_pole) AS geom  FROM pole ORDER BY lib_pole ASC";
 			$result = mysql_query($sql);
 			$i = 0;
@@ -24,5 +23,5 @@
 			// TODO
 			break;
 	}
-	
+
 ?>

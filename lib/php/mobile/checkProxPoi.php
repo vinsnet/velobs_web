@@ -1,11 +1,10 @@
 <?php header('Content-Type:text/xml; charset=UTF-8');
 	include_once '../key.php';
+	include_once '../database.php';
 
 	switch (SGBD) {
 		case 'mysql':
-			$link = mysql_connect(HOST.':'.PORT, DB_USER, DB_PASS);
-			mysql_select_db(DB_NAME);
-			mysql_query("SET NAMES utf8mb4");
+			$link = Database::getIntance()->connect();
 
             print '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
             print '<response>';
@@ -23,30 +22,30 @@
                 }
                 $centerlat = $_POST['lat'];
                 $centerlng = $_POST['lng'];
-                $sql = "SELECT  lib_subcategory, 
-                		lib_commune, 
-                		datecreation_poi, 
-                		prop_poi, 
-                		x(poi.geom_poi) AS X, 
+                $sql = "SELECT  lib_subcategory,
+                		lib_commune,
+                		datecreation_poi,
+                		prop_poi,
+                		x(poi.geom_poi) AS X,
                 		y(poi.geom_poi) AS Y,
-                		commune_id_commune, 
-                		desc_poi, 
-                		num_poi, 
-                		photo_poi, 
-                		id_poi, 
-                		lib_poi, 
-                		rue_poi, 
-                		status_id_status, 
-                		subcategory_id_subcategory, 
-                		6371 * 2 * asin(sqrt(power(sin((".$centerlat." - abs(y(geom_poi))) * pi() / 180 / 2), 2) + cos(".$centerlat." * pi() / 180) * cos(abs(y(geom_poi)) * pi() / 180) * power(sin((".$centerlng." - x(geom_poi)) * pi() / 180 / 2), 2) )) AS distance, 
-                		priorite_id_priorite 
+                		commune_id_commune,
+                		desc_poi,
+                		num_poi,
+                		photo_poi,
+                		id_poi,
+                		lib_poi,
+                		rue_poi,
+                		status_id_status,
+                		subcategory_id_subcategory,
+                		6371 * 2 * asin(sqrt(power(sin((".$centerlat." - abs(y(geom_poi))) * pi() / 180 / 2), 2) + cos(".$centerlat." * pi() / 180) * cos(abs(y(geom_poi)) * pi() / 180) * power(sin((".$centerlng." - x(geom_poi)) * pi() / 180 / 2), 2) )) AS distance,
+                		priorite_id_priorite
                 	FROM poi
                 	INNER JOIN subcategory ON subcategory.id_subcategory = poi.subcategory_id_subcategory
                 	INNER JOIN commune ON commune.id_commune = poi.commune_id_commune
-                	WHERE priorite_id_priorite <> 6 
-                				AND moderation_poi = 1 
-                				AND (status_id_status LIKE 1 OR status_id_status LIKE 3 OR status_id_status LIKE 5) 
-                	HAVING distance < ".$buffer." 
+                	WHERE priorite_id_priorite <> 6
+                				AND moderation_poi = 1
+                				AND (status_id_status LIKE 1 OR status_id_status LIKE 3 OR status_id_status LIKE 5)
+                	HAVING distance < ".$buffer."
                 	ORDER BY distance";
                 if (DEBUG){
                 	error_log(date("Y-m-d H:i:s") . " " .__FUNCTION__ . " - checkProxPOI.php pour $centerlat et $centerlng \n", 3, LOG_FILE);
@@ -75,22 +74,22 @@
                             print '<ville><![CDATA['.stripslashes($row['lib_commune']).']]></ville>';
 			    			print '<prop><![CDATA['.stripslashes($row['prop_poi']).']]></prop>';
 			    			print '<dateCreation><![CDATA['.stripslashes($row['datecreation_poi']).']]></dateCreation>';
-								
+
                             print '<listcomment>';
-														
+
 							$sql4 = "SELECT * FROM commentaires WHERE poi_id_poi = ".$row['id_poi']." AND display_commentaires = 1";
 							$result4 = mysql_query($sql4);
-															
+
 							while ($row4 = mysql_fetch_array($result4)) {
 								print '<comment id="'.$row4['id_commentaires'].'">';
 								print '<textcommentaire><![CDATA['.stripslashes($row4['text_commentaires']).']]></textcommentaire>';
 								print '<urlphoto>'.$row4['url_photo'].'</urlphoto>';
 								print '<datecommentaire><![CDATA['.stripslashes($row4['datecreation']).']]></datecommentaire>';
                                	print '</comment>';
-							}	
+							}
 							mysql_free_result($result4);
-							print '</listcomment>';		
-					
+							print '</listcomment>';
+
                         print '</poi>';
                     }
                     print '</listpoi>';

@@ -1,21 +1,20 @@
 <?php header('Content-Type: text/html; charset=UTF-8');
 	include_once '../key.php';
-	
+	include_once '../database.php';
+
 	switch (SGBD) {
 		case 'mysql':
 			if (DEBUG) {
 				error_log(date("Y-m-d H:i:s") . " - public/getMarker.php \n", 3, LOG_FILE );
 			}
-			$link = mysql_connect(HOST.':'.PORT, DB_USER, DB_PASS);
-			mysql_select_db(DB_NAME);
-			mysql_query("SET NAMES utf8mb4");
-			
-			
-			
+			$link = Database::getIntance()->connect();
+
+
+
 			if (isset($_GET['id'])) {
 				$sql = "SELECT *, commune.lib_commune, x(poi.geom_poi) AS X, y(poi.geom_poi) AS Y, subcategory.icon_subcategory, subcategory.lib_subcategory FROM poi INNER JOIN subcategory ON (subcategory.id_subcategory = poi.subcategory_id_subcategory) INNER JOIN commune ON (commune.id_commune = poi.commune_id_commune) INNER JOIN priorite ON (poi.priorite_id_priorite = priorite.id_priorite) WHERE poi.moderation_poi = TRUE AND delete_poi = FALSE AND poi.id_poi = ".$_GET['id'];
 			} else {
-				
+
 				if ($_GET['date'] == NULL) {
 					$datesqlappend = '';
 					//$datesqlappend = ' AND (TO_DAYS(NOW()) - TO_DAYS(datecreation_poi)) <= 365';
@@ -39,7 +38,7 @@
 							break;
 					}
 				}
-				
+
 				if ($_GET['status'] == NULL) {
 					$statussqlappend = '';
 				} else {
@@ -65,7 +64,7 @@
 						default:
 							$statussqlappend = '';
 							break;
-				
+
 					}
 				}
 				$listType = $_GET['listType'];
@@ -82,7 +81,7 @@
 				} else {
 				    $sqlappend .= " AND priorite.id_priorite = 6 ";
 				}
-		
+
 				$sql = "SELECT *, commune.lib_commune, x(poi.geom_poi) AS X, y(poi.geom_poi) AS Y, subcategory.icon_subcategory, subcategory.lib_subcategory FROM poi INNER JOIN subcategory ON (subcategory.id_subcategory = poi.subcategory_id_subcategory) INNER JOIN commune ON (commune.id_commune = poi.commune_id_commune) INNER JOIN priorite ON (poi.priorite_id_priorite = priorite.id_priorite) INNER JOIN status ON (status.id_status = poi.status_id_status) ";
 				$sql .= $sqlappend;
 				$sql .= $datesqlappend;
@@ -132,7 +131,7 @@
                     $arr[$i]['datecreation'][$j] = stripslashes($row2['datecreation']);
                     $j++;
 				}
-		
+
 				$i++;
 			}
 			echo '{"markers":'.json_encode($arr).'}';

@@ -2,13 +2,12 @@
 	session_start();
 	include_once '../key.php';
 	include_once '../commonfunction.php';
-	
+	include_once '../database.php';
+
 	if (isset($_SESSION['user'])) {
 		switch (SGBD) {
 			case 'mysql':
-				$link = mysql_connect(HOST.':'.PORT, DB_USER, DB_PASS);
-				mysql_select_db(DB_NAME);
-				mysql_query("SET NAMES utf8mb4");
+				$link = Database::getIntance()->connect();
 
 				if (isset($_FILES['photo-path'])) {
 					$dossier = '../../../resources/icon/marker/';
@@ -16,7 +15,7 @@
 					$taille_maxi = 52400;
 					$taille = filesize($_FILES['photo-path']['tmp_name']);
 					$extensions = array('.png');
-					$extension = strrchr($_FILES['photo-path']['name'], '.'); 
+					$extension = strrchr($_FILES['photo-path']['name'], '.');
 					if (!in_array($extension, $extensions)) {
 						$erreur = getTranslation($_SESSION['id_language'],'ERROR');
 						$return['success'] = false;
@@ -29,11 +28,11 @@
 					}
 
 					if (!isset($erreur)) {
-						$fichier = strtr($fichier, 
-								'ÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝàáâãäåçèéêëìíîïðòóôõöùúûüýÿ_', 
+						$fichier = strtr($fichier,
+								'ÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝàáâãäåçèéêëìíîïðòóôõöùúûüýÿ_',
 								'AAAAAACEEEEIIIIOOOOOUUUUYaaaaaaceeeeiiiioooooouuuuyy-');
 						$fichier = preg_replace('/([^.a-z0-9]+)/i', '-', $fichier);
-			
+
 						$sql = "SELECT max(id_iconmarker) AS nb FROM iconmarker";
 						$result = mysql_query($sql);
 						$lastid = mysql_result($result, 0);
@@ -45,14 +44,14 @@
 						$size = getimagesize($_FILES['photo-path']['tmp_name']);
 						if ($size[0] != 32 || $size[1] != 37) {
 							$return['pb'] = getTranslation($_SESSION['id_language'],'ICONSIZEPIXEL');
-						} else {													
+						} else {
 							if (move_uploaded_file($_FILES['photo-path']['tmp_name'], $pathphoto)) {
 								$return['success'] = true;
 								$return['ok'] = getTranslation($_SESSION['id_language'],'ICONTRANSFERTDONE');
 								$size = getimagesize($pathphoto);
 								$newpathphoto = $dossier.$fichier;
 								rename($pathphoto, $newpathphoto);
-			
+
 								$newpathphoto16x18 = $dossier."16x18/".$fichier;
 								copy($newpathphoto, $newpathphoto16x18);
 								$percent = 0.5;
@@ -89,10 +88,10 @@
 			$sql = "INSERT INTO iconmarker (urlname_iconmarker) VALUES ('$urlname')";
 			$result = mysql_query($sql);
 		}
-		
+
 		mysql_free_result($result);
 		mysql_close($link);
-		
+
 		echo json_encode($return);
 
 	}

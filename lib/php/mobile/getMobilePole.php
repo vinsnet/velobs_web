@@ -1,11 +1,11 @@
 <?php header('Content-Type:text/xml');
 	include_once '../key.php';
-	
+	include_once '../database.php';
+
 	switch (SGBD) {
 		case 'mysql':
-			$link = mysql_connect(HOST.':'.PORT, DB_USER, DB_PASS);
-			mysql_select_db(DB_NAME);	
-			
+			$link = Database::getIntance()->connect();
+
 			$sql = "SELECT id_pole, lib_pole FROM pole ORDER BY id_pole ASC";
 			$result = mysql_query($sql);
 			print '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
@@ -21,6 +21,6 @@
 		case 'postgresql':
 			// TODO
 			break;
-	}	
-	
+	}
+
 ?>

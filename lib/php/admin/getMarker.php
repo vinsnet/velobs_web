@@ -3,6 +3,8 @@
 header ( 'Content-Type: text/html; charset=UTF-8' );
 session_start ();
 include_once '../key.php';
+include_once '../database.php';
+
 
 if (isset ( $_SESSION ['user'] )) {
 	switch (SGBD) {
@@ -10,9 +12,7 @@ if (isset ( $_SESSION ['user'] )) {
 			if (DEBUG) {
 				error_log ( date ( "Y-m-d H:i:s" ) . " - admin/getMarker.php\n", 3, LOG_FILE );
 			}
-			$link = mysql_connect(HOST.':'.PORT, DB_USER, DB_PASS);
-			mysql_select_db ( DB_NAME );
-			mysql_query ( "SET NAMES utf8mb4" );
+			$link = Database::getIntance()->connect();
 			$sql = "SELECT *, commune.lib_commune, x(poi.geom_poi) AS X, y(poi.geom_poi) AS Y, subcategory.icon_subcategory FROM poi INNER JOIN subcategory ON (subcategory.id_subcategory = poi.subcategory_id_subcategory) INNER JOIN commune ON (commune.id_commune = poi.commune_id_commune) INNER JOIN priorite ON (poi.priorite_id_priorite = priorite.id_priorite) ";
 			$sqlappend = ' WHERE ';
 			if (isset ( $_GET ['id'] )) {
@@ -37,12 +37,12 @@ if (isset ( $_SESSION ['user'] )) {
 // 				}
 // 				$sqlappend = substr ( $sqlappend, 0, strlen ( $sqlappend ) - 3 );
 // 				$sqlappend .= " ) ";
-				
-				
+
+
 				if ($_SESSION ["type"] == 4) {
 					$sqlappend .= ' AND poi.pole_id_pole = ' . $_SESSION ["pole"] . ' ';
 				}
-				
+
 			}
 			$sql .= $sqlappend;
 			if (DEBUG) {
@@ -65,7 +65,7 @@ if (isset ( $_SESSION ['user'] )) {
 				$arr [$i] ['num'] = stripslashes ( $row ['num_poi'] );
 				$arr [$i] ['rue'] = stripslashes ( $row ['rue_poi'] );
 				$arr [$i] ['commune'] = stripslashes ( $row ['lib_commune'] );
-				
+
 				if ($row ['priorite_id_priorite'] == 6) {
 					$arr [$i] ['icon'] = 'resources/icon/marker/done.png';
 					$arr [$i] ['iconCls'] = 'done';
@@ -76,14 +76,14 @@ if (isset ( $_SESSION ['user'] )) {
 					$arr [$i] ['icon'] = 'resources/icon/marker/' . $row ['icon_subcategory'] . '.png';
 					$arr [$i] ['iconCls'] = $row ['icon_subcategory'];
 				}
-				
+
 				$arr [$i] ['lat'] = $row ['Y'];
 				$arr [$i] ['lon'] = $row ['X'];
 				$arr [$i] ['lastdatemodif_poi'] = $row ['lastdatemodif_poi'];
 				$sql2 = "SELECT * FROM commentaires WHERE poi_id_poi = " . $row ['id_poi'];
 				$result2 = mysql_query ( $sql2 );
 				$j = 0;
-				
+
 				while ( $row2 = mysql_fetch_array ( $result2 ) ) {
 					$arr [$i] ['commentaires'] [$j] = stripslashes ( $row2 ['text_commentaires'] );
 					$arr [$i] ['photos'] [$j] = stripslashes ( $row2 ['url_photo'] );
@@ -92,14 +92,14 @@ if (isset ( $_SESSION ['user'] )) {
 					$arr [$i] ['affiche'] [$j] = stripslashes ( $row2 ['display_commentaires'] );
 					$j ++;
 				}
-				
+
 				$i ++;
 			}
 			if (DEBUG) {
 				error_log ( date ( "Y-m-d H:i:s" ) . " - admin/getMarker.php retour json avec $i obs\n", 3, LOG_FILE );
 			}
 			echo '{"markers":' . json_encode ( $arr ) . '}';
-			
+
 			mysql_free_result ( $result );
 			mysql_close ( $link );
 			break;

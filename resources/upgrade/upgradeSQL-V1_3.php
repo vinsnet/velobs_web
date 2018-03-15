@@ -1,8 +1,7 @@
 <?php
 include_once '../../lib/php/key.php';
-$link = mysql_connect(HOST.':'.PORT, DB_USER, DB_PASS);
-mysql_select_db(DB_NAME);
-mysql_query("SET NAMES utf8mb4");
+include_once '../../database.php';
+$link = Database::getIntance()->connect();
 if (DEBUG){
 	error_log(date("Y-m-d H:i:s") . " Entrée dans upgradeSQL.php \n", 3, LOG_FILE);
 }

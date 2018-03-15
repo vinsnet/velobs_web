@@ -1,14 +1,13 @@
 <?php header('Content-Type: text/html; charset=UTF-8');
 	session_start();
 	include_once '../key.php';
-	
+	include_once '../database.php';
+
 	if (isset($_SESSION['user'])) {
 		switch (SGBD) {
 			case 'mysql':
-				$link = mysql_connect(HOST.':'.PORT, DB_USER, DB_PASS);
-				mysql_select_db(DB_NAME);
-				mysql_query("SET NAMES utf8mb4");
-				
+				$link = Database::getIntance()->connect();
+
 				if (isset($_GET['type'])) {
 					switch ($_GET['type']) {
 						case 'category':
@@ -30,7 +29,7 @@
 								echo '{"success": true, "file": "'.$file.'"}';
 							}
 							break;
-							
+
 						case 'subcategory':
 							$file = "subcategory_".date('Y-m-d').".csv";
 							$fh = fopen("../../../resources/csv/".$file, 'w');
@@ -49,8 +48,8 @@
 								fclose($fh);
 								echo '{"success": true, "file": "'.$file.'"}';
 							}
-							break;	
-												
+							break;
+
 						case 'poi':
 							$file = "velobs_poi_".date('Y-m-d').".csv";
 							$fh = fopen("../../../resources/csv/".$file, 'w');
@@ -70,25 +69,25 @@
 										$extraSQL = " AND poi.pole_id_pole = " .$_SESSION['pole'] . " ";
 									}
 								}
-								$sql = "SELECT 
-											poi.*, 
-											priorite.lib_priorite, 
-											pole.lib_pole, 
-											x(poi.geom_poi) AS X, 
-											y(poi.geom_poi) AS Y, 
-											lib_category, 
-											lib_subcategory, 
+								$sql = "SELECT
+											poi.*,
+											priorite.lib_priorite,
+											pole.lib_pole,
+											x(poi.geom_poi) AS X,
+											y(poi.geom_poi) AS Y,
+											lib_category,
+											lib_subcategory,
 											lib_commune,
-											lib_status 
-										FROM poi 
-											INNER JOIN subcategory ON (subcategory.id_subcategory = poi.subcategory_id_subcategory) 
-											INNER JOIN category ON (subcategory.category_id_category = category.id_category) 
-											INNER JOIN commune ON (commune.id_commune = poi.commune_id_commune) 
-											INNER JOIN pole ON (pole.id_pole = poi.pole_id_pole) 
+											lib_status
+										FROM poi
+											INNER JOIN subcategory ON (subcategory.id_subcategory = poi.subcategory_id_subcategory)
+											INNER JOIN category ON (subcategory.category_id_category = category.id_category)
+											INNER JOIN commune ON (commune.id_commune = poi.commune_id_commune)
+											INNER JOIN pole ON (pole.id_pole = poi.pole_id_pole)
 											INNER JOIN priorite ON (priorite.id_priorite = poi.priorite_id_priorite)
 											INNER JOIN status ON (status.id_status = poi.status_id_status)
-										WHERE 
-											poi.delete_poi = FALSE 
+										WHERE
+											poi.delete_poi = FALSE
 											$extraSQL
 										ORDER BY id_poi DESC";
 								$result = mysql_query($sql);
@@ -122,7 +121,7 @@
 								echo '{"success": true, "file": "'.$file.'"}';
 							}
 							break;
-							
+
 						case 'pole':
 							$file = "pole_".date('Y-m-d').".csv";
 							$fh = fopen("../../../resources/csv/".$file, 'w');
@@ -142,7 +141,7 @@
 								echo '{"success": true, "file": "'.$file.'"}';
 							}
 							break;
-							
+
 						case 'quartier':
 							$file = "quartier_".date('Y-m-d').".csv";
 							$fh = fopen("../../../resources/csv/".$file, 'w');
@@ -162,7 +161,7 @@
 								echo '{"success": true, "file": "'.$file.'"}';
 							}
 							break;
-							
+
 						case 'priorite':
 							$file = "priorite_".date('Y-m-d').".csv";
 							$fh = fopen("../../../resources/csv/".$file, 'w');
@@ -186,9 +185,9 @@
 				} else {
 					echo '{"success": false}';
 				}
-							
+
 				mysql_free_result($result);
-				mysql_close($link);	
+				mysql_close($link);
 				break;
 			case 'postgresql':
 				// TODO

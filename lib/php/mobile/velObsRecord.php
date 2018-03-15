@@ -1,13 +1,13 @@
 <?php header('Content-Type: text/html; charset=UTF-8');
 
-    include_once '../key.php';
+  include_once '../key.php';
+	include_once '../database.php';
 
  	include_once '../admin/adminfunction.php';
 
 	switch (SGBD) {
         case 'mysql':
-            $link = mysql_connect(HOST.':'.PORT, DB_USER, DB_PASS);
-            mysql_select_db(DB_NAME);
+            $link = Database::getIntance()->connect();
             $output = var_export($_POST, true);
             if (DEBUG){
             	error_log(date("Y-m-d H:i:s") . "  - velObsRecord.php $output\n", 3, LOG_FILE);
@@ -21,7 +21,7 @@
             	}
             	$createObservation = 0;
             	echo 'Des informations sont manquantes pour créer l\'observation';
-            	
+
             }
             if (isset($_FILES["photo1"]) && $createObservation) {
             	if (DEBUG){
@@ -30,7 +30,7 @@
             	$allowedExts = array("gif", "jpeg", "jpg", "png", "GIF", "JPEG", "JPG", "PNG");
             	$temp = explode(".", $_FILES["photo1"]["name"]);
             	$extension = end($temp);
-            	
+
             		if (!in_array($extension, $allowedExts)) {
             			echo 'L\'extension du nom de la photo n\'est pas correct';
             			$createObservation = 0;
@@ -38,7 +38,7 @@
             			echo 'Le type du fichier soumis come photo n\'est pas correct';
             			$createObservation = 0;
             		} else {
-            	
+
             			/*
             			 ICI ON INSERE EN BASE AVEC LA PHOTO
             			*/
@@ -58,7 +58,7 @@
             				$createObservation = 0;
             			}
             			$photo_poi = $newnamefichier;
-            			
+
             		}
             }
             if ($createObservation){
@@ -85,7 +85,7 @@
                         $lib_subcategory = $row['lib_subcategory'];
                     }
                     $lib_poi = mysql_real_escape_string($lib_subcategory);
-                    
+
                     switch ($_POST['geolocatemode_poi']) {
                         case 'gps':
                             $geolocatemode_poi = 2;
@@ -100,7 +100,7 @@
 
                     $rue_poi = mysql_real_escape_string($_POST['rue_poi']);
                     $num_poi = mysql_real_escape_string($_POST['num_poi']);
-                    
+
                     $commune_id_commune = 99999;
 					$pole_id_pole = 9;
 					$quartier_id_quartier = 99999;
@@ -119,10 +119,10 @@
                     	}
                     	$infoPOI = "Repere : $num_poi\nMail : $mail_poi\nTel : $tel_poi\nRue : $rue_poi\nDescription : $desc_poi\nProposition : $prop_poi\nNom : $adherent_poi\nLatitude : $latitude_poi\nLongitude : $longitude_poi\n Categorie : $subcategory_id_subcategory";
                     	sendMail(MAIL_FROM,"Erreur creation observation sur mobile", "Message affiché à l'utilisateur : L'observation semble être dans une zone non couverte par VelObs, si ce n'est pas le cas, merci de nous contacter à l'adresse " . MAIL_FROM. "\n" . $infoPOI);
-                    		
+
                      	die("L'observation semble être dans une zone non couverte par VelObs, si ce n'est pas le cas, merci de nous contacter à l'adresse " . MAIL_FROM);
                     }
-                    
+
 
                     // si le mail est un administrateur ou un modérateur alors on bypasse la modération
                     $sql2 = "SELECT id_users FROM users WHERE (usertype_id_usertype = 1 OR usertype_id_usertype = 4) AND mail_users LIKE '".$mail_poi."'";
@@ -130,13 +130,13 @@
                     $num_rows2 = mysql_num_rows($result2);
                     $priorityId = 1;
                     $moderationFlag = 1;
-                    
+
                     if ($num_rows2 == 0) {
                     	$priorityId = 4;
                     	$moderationFlag = 0;
                     }
                         $sql = "INSERT INTO poi (priorite_id_priorite, quartier_id_quartier, pole_id_pole, lib_poi, desc_poi, prop_poi, datecreation_poi, subcategory_id_subcategory, display_poi, geom_poi, geolocatemode_poi, commune_id_commune, num_poi, rue_poi, mail_poi, tel_poi, moderation_poi, fix_poi, status_id_status, photo_poi) VALUES ($priorityId, $quartier_id_quartier, $pole_id_pole, '$lib_poi', '$desc_poi', '$prop_poi', '$date_poi', $subcategory_id_subcategory, 1, GeomFromText('POINT(".$longitude_poi." ".$latitude_poi.")'), $geolocatemode_poi, $commune_id_commune, '$num_poi', '$rue_poi', '$mail_poi', '$tel_poi', $moderationFlag, 0, 5, '$photo_poi')";
-                    	
+
                     $result = mysql_query($sql);
                     if (!$result) {
                         echo "La création de l'observation a échoué.";
@@ -151,7 +151,7 @@
                     	error_log(date("Y-m-d H:i:s") . " " .__FUNCTION__ . " - updateObsBoolean ". $arrayDetailsAndUpdateSQL['updateObsBoolean'] ." pour l'update de l'obs $id_poi \n", 3, LOG_FILE);
                     	error_log(date("Y-m-d H:i:s") . " " .__FUNCTION__ . " - sqlUpdate ". $arrayDetailsAndUpdateSQL['sqlUpdate'] ." pour l'update de l'obs $id_poi \n", 3, LOG_FILE);
                     	error_log(date("Y-m-d H:i:s") . " " .__FUNCTION__ . " - detailObservationString ".$arrayDetailsAndUpdateSQL['detailObservationString'] ." pour l'update de l'obs $id_poi \n", 3, LOG_FILE);
-                    		
+
                     }
                     if ($num_rows2 == 0){
                     	/* envoi d'un mail aux administrateurs de l'association et modérateurs */
@@ -166,7 +166,7 @@ Lien vers la modération : ".URL.'/admin.php?id='.$arrayObs['id_poi']."\n".$arra
                     		error_log(date("Y-m-d H:i:s") . " " .__FUNCTION__ . " Il y a ". count($mails) . " mails à envoyer \n", 3, LOG_FILE);
                     	}
                     	//
-                    
+
                     	/* debut envoi d'un mail au contributeur */
                     	$subject = 'Observation en attente de modération';
                     	$message = "Bonjour !

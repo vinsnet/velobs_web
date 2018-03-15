@@ -1,12 +1,11 @@
 <?php header('Content-Type: text/html; charset=UTF-8');
 	include_once '../key.php';
-	
+	include_once '../database.php';
+
 	switch (SGBD) {
 		case 'mysql':
-			$link = mysql_connect(HOST.':'.PORT, DB_USER, DB_PASS);
-			mysql_select_db(DB_NAME);
-			mysql_query("SET NAMES utf8mb4");
-			
+			$link = Database::getIntance()->connect();
+
 			$sql = "SELECT id_subcategory, lib_subcategory FROM subcategory WHERE proppublic_subcategory = TRUE ORDER BY lib_subcategory ASC";
 			$result = mysql_query($sql);
 			$i = 0;
@@ -24,5 +23,5 @@
 			// TODO
 			break;
 	}
-	
+
 ?>

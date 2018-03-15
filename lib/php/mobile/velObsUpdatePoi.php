@@ -1,13 +1,12 @@
 <?php header('Content-Type: text/html; charset=UTF-8');
 
-    include_once '../key.php';
+  include_once '../key.php';
+	include_once '../database.php';
 	include_once '../admin/adminfunction.php';
 
 	switch (SGBD) {
         case 'mysql':
-            $link = mysql_connect(HOST.':'.PORT, DB_USER, DB_PASS);
-            mysql_select_db(DB_NAME);
-            mysql_query("SET NAMES utf8mb4");
+            $link = Database::getIntance()->connect();
             $url_photo = '';
             $createObservation = 1;
             if (isset($_FILES["photo1"])) {
@@ -42,7 +41,7 @@
                     $id_poi = mysql_real_escape_string($_POST['id_poi']);
                     $text = mysql_real_escape_string($_POST['text_comment']);
                     $mail_commentaires = mysql_real_escape_string($_POST['mail_comment']);
-                    
+
                     $sql = "INSERT INTO commentaires (text_commentaires, display_commentaires, mail_commentaires, poi_id_poi, url_photo) VALUES ('$text', 0, '$mail_commentaires',$id_poi, '$url_photo')";
                     $result = mysql_query($sql);
                     $id_commentaire = mysql_insert_id();
@@ -52,9 +51,9 @@
                     $row = mysql_fetch_row($res);
                     $pole_id_pole = $row[0];
                     echo 'dataOK';
-                    
-                    
-                    
+
+
+
                     $arrayObs = getObservationDetailsInArray($id_poi);
                     $arrayDetailsAndUpdateSQL = getObservationDetailsInString($arrayObs);
                     if (DEBUG){
@@ -62,7 +61,7 @@
                     	error_log(date("Y-m-d H:i:s") . " " .__FUNCTION__ . " - updateObsBoolean ". $arrayDetailsAndUpdateSQL['updateObsBoolean'] ." pour l'update de l'obs $id_poi \n", 3, LOG_FILE);
                     	error_log(date("Y-m-d H:i:s") . " " .__FUNCTION__ . " - sqlUpdate ". $arrayDetailsAndUpdateSQL['sqlUpdate'] ." pour l'update de l'obs $id_poi \n", 3, LOG_FILE);
                     	error_log(date("Y-m-d H:i:s") . " " .__FUNCTION__ . " - detailObservationString ".$arrayDetailsAndUpdateSQL['detailObservationString'] ." pour l'update de l'obs $id_poi \n", 3, LOG_FILE);
-                    		
+
                     }
                     if ($num_rows2 == 0){
                     	$newCommentInfo = "Nouveau commentaire : ". $_POST['text_comment']."\nPosté par $mail_commentaires \n";
@@ -78,7 +77,7 @@ Lien vers la modération : ".URL.'/admin.php?id='.$arrayObs['id_poi']."\n".
 $newCommentInfo. $arrayDetailsAndUpdateSQL['detailObservationString']."\n";
 						$mails = array();
 						$mails = getMailsToSend($whereClause, $subject, $message );
-					
+
 						/* debut envoi d'un mail au contributeur */
 						$subject = 'Commentaire en attente de modération';
 						$message = "Bonjour !
