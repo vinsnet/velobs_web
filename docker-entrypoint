@@ -1,0 +1,5 @@
+#!/bin/sh
+
+chmod -R 770 resources/pictures resources/icon/marker resources/css/icon.css resources/csv
+
+exec docker-php-entrypoint apache2-foreground
