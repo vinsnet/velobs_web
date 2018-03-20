@@ -6,7 +6,7 @@
 	switch (SGBD) {
 		case 'mysql':
 			$link = Database::getIntance()->connect();
-			
+
 			$latitude_poi = $_POST['lat'];
 			$longitude_poi = $_POST['lng'];
 			$date_poi = $_POST['date'];
