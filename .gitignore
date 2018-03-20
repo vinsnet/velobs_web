@@ -1,3 +1,5 @@
 *.csv
-lib/js/key.js
-lib/php/key.php
+src/lib/js/key.js
+src/lib/php/key.php
+conf/key.php
+conf/key.js
